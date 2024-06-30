@@ -443,7 +443,7 @@ A high-throughput setup (i.e., parallel execution of independent parts in the wo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><img src="https://mermaid.ink/img/Zmxvd2NoYXJ0IFRECiAgICA4YWU2ODFlNy02NWMxLTQ3NjgtYWM0MS1mZTNiYWMwNTVkYTQobXlfZnVuY3Rpb24pIC0tPnxvdXRwdXR8IGJhMzZjZDQ0LTVkYTgtNDI3YS1hMDU1LWU3MDM4NzVmMTcxYyhteV9zZWNvbmRfZnVuY3Rpb24pCiAgICA4YWU2ODFlNy02NWMxLTQ3NjgtYWM0MS1mZTNiYWMwNTVkYTQobXlfZnVuY3Rpb24pCiAgICBiYTM2Y2Q0NC01ZGE4LTQyN2EtYTA1NS1lNzAzODc1ZjE3MWMobXlfc2Vjb25kX2Z1bmN0aW9uKQ=="/></div></div>
+<div class="output text_html"><img src="https://mermaid.ink/img/Zmxvd2NoYXJ0IFRECiAgICAyOTQwZDdkYS1iMWUyLTQ2M2UtYTY0Mi01ZWJiYjQwZWJiNWMobXlfZnVuY3Rpb24pIC0tPnxvdXRwdXR8IGJhNjA2N2IzLWM1MjktNDhmOS04NjhkLWFhM2I1MzI3MmVlZChteV9zZWNvbmRfZnVuY3Rpb24pCiAgICAyOTQwZDdkYS1iMWUyLTQ2M2UtYTY0Mi01ZWJiYjQwZWJiNWMobXlfZnVuY3Rpb24pCiAgICBiYTYwNjdiMy1jNTI5LTQ4ZjktODY4ZC1hYTNiNTMyNzJlZWQobXlfc2Vjb25kX2Z1bmN0aW9uKQ=="/></div></div>
 </div>
 <p>With a so-called <code class="docutils literal notranslate"><span class="pre">Maker</span></code> object, the implementation of <code class="docutils literal notranslate"><span class="pre">job</span></code> and <code class="docutils literal notranslate"><span class="pre">Flow</span></code> objects can be further simplified. It is an extended dataclass object that generates a <code class="docutils literal notranslate"><span class="pre">job</span></code> or <code class="docutils literal notranslate"><span class="pre">Flow</span></code> with the <code class="docutils literal notranslate"><span class="pre">make</span></code> method. Dataclasses are used as they allow defining immutable default values. These <code class="docutils literal notranslate"><span class="pre">Makers</span></code> can then be used to reuse code via the usual inheritance in Python.</p>
 <div class="cell docutils container">
@@ -725,6 +725,9 @@ We will now use this knowledge to implement the Quantum Espresso-related tasks f
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jobflow</span> <span class="kn">import</span> <span class="n">job</span><span class="p">,</span> <span class="n">Response</span><span class="p">,</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">run_locally</span>
 
+<span class="c1"># set up QE PP env</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ESPRESSO_PSEUDO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="si">}</span><span class="s2">/espresso/pseudo&quot;</span>
+
 <span class="nd">@job</span>
 <span class="k">def</span> <span class="nf">get_ev_curve</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">strain_lst</span><span class="p">):</span>
     <span class="n">structures</span><span class="o">=</span><span class="n">generate_structures</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span><span class="n">strain_lst</span><span class="o">=</span><span class="n">strain_lst</span><span class="p">)</span>
@@ -749,83 +752,92 @@ We will now use this knowledge to implement the Quantum Espresso-related tasks f
 <span class="n">plot_curve</span> <span class="o">=</span> <span class="n">plot_energy_volume_curve_job</span><span class="p">(</span><span class="n">volume_lst</span><span class="o">=</span><span class="n">ev_curve_data</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;volumes&quot;</span><span class="p">],</span> <span class="n">energy_lst</span><span class="o">=</span><span class="n">ev_curve_data</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;energies&quot;</span><span class="p">])</span>
 <span class="c1"># (E, V) curve data job and plotting the curve job connected via ev_curve_data.output</span>
 <span class="n">qe_flow</span> <span class="o">=</span> <span class="p">[</span><span class="n">relax</span><span class="p">,</span> <span class="n">ev_curve_data</span><span class="p">,</span> <span class="n">plot_curve</span><span class="p">]</span>  
+<span class="n">qe_fw</span> <span class="o">=</span> <span class="n">Flow</span><span class="p">(</span><span class="n">qe_flow</span><span class="p">)</span>
 <span class="c1"># qe_flow is the QE flow that consists of the job for structural optimization, calculating the (E, V) curve data points and plotting the curve</span>
-<span class="n">run_locally</span><span class="p">(</span><span class="n">Flow</span><span class="p">(</span><span class="n">qe_flow</span><span class="p">),</span> <span class="n">create_folders</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># order of the jobs in the flow is determined by connectivity</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:12,541 INFO Started executing jobs locally
-2024-06-30 23:22:12,543 INFO Starting job - base qe job (298bff7e-e31e-405e-b41d-34c581667aac)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:42,392 INFO Finished job - base qe job (298bff7e-e31e-405e-b41d-34c581667aac)
-2024-06-30 23:22:42,393 INFO Starting job - get_ev_curve (3b25ca75-bb7f-4a5e-bd4f-a0e9690bbb74)
-2024-06-30 23:22:42,404 INFO Finished job - get_ev_curve (3b25ca75-bb7f-4a5e-bd4f-a0e9690bbb74)
-2024-06-30 23:22:42,407 INFO Starting job - static qe job (b2bea4ad-f208-4076-b77d-f32119345366)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:46,253 INFO Finished job - static qe job (b2bea4ad-f208-4076-b77d-f32119345366)
-2024-06-30 23:22:46,254 INFO Starting job - static qe job (6c8537ac-07c1-407b-b341-a395c9685348)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:50,257 INFO Finished job - static qe job (6c8537ac-07c1-407b-b341-a395c9685348)
-2024-06-30 23:22:50,258 INFO Starting job - static qe job (579b021c-3908-4988-8f37-d16b3cf72076)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:54,494 INFO Finished job - static qe job (579b021c-3908-4988-8f37-d16b3cf72076)
-2024-06-30 23:22:54,495 INFO Starting job - static qe job (e061eee6-4e8a-4d91-8aea-436078178f15)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:22:59,351 INFO Finished job - static qe job (e061eee6-4e8a-4d91-8aea-436078178f15)
-2024-06-30 23:22:59,352 INFO Starting job - static qe job (538fac48-00b5-49c2-8476-a6635130916b)
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
-Authorization required, but no authorization protocol specified
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:23:04,126 INFO Finished job - static qe job (538fac48-00b5-49c2-8476-a6635130916b)
-2024-06-30 23:23:04,127 INFO Starting job - store_inputs (3b25ca75-bb7f-4a5e-bd4f-a0e9690bbb74, 2)
-2024-06-30 23:23:04,129 INFO Finished job - store_inputs (3b25ca75-bb7f-4a5e-bd4f-a0e9690bbb74, 2)
-2024-06-30 23:23:04,130 INFO Starting job - plot_energy_volume_curve_job (589b3583-80af-49ac-89a5-3f70469fdd9f)
-2024-06-30 23:23:04,221 INFO Finished job - plot_energy_volume_curve_job (589b3583-80af-49ac-89a5-3f70469fdd9f)
-2024-06-30 23:23:04,222 INFO Finished executing jobs locally
-</pre></div>
-</div>
-<div class="output text_html"><img src="https://mermaid.ink/img/Zmxvd2NoYXJ0IFRECiAgICAyOThiZmY3ZS1lMzFlLTQwNWUtYjQxZC0zNGM1ODE2NjdhYWMoYmFzZSBxZSBqb2IpCiAgICAzYjI1Y2E3NS1iYjdmLTRhNWUtYmQ0Zi1hMGU5NjkwYmJiNzQoZ2V0X2V2X2N1cnZlKQogICAgNTg5YjM1ODMtODBhZi00OWFjLTg5YTUtM2Y3MDQ2OWZkZDlmKHBsb3RfZW5lcmd5X3ZvbHVtZV9jdXJ2ZV9qb2Ip"/></div><img alt="_images/b4ed0b6f9d109fbde2914b3d5ea1e9b94c53c9a407f25f17f76c7d28fca5cb06.png" src="_images/b4ed0b6f9d109fbde2914b3d5ea1e9b94c53c9a407f25f17f76c7d28fca5cb06.png" />
-</div>
-</div>
-<p>The Mermaid diagram looks like this:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span> <span class="o">=</span> <span class="n">to_mermaid</span><span class="p">(</span><span class="n">Flow</span><span class="p">(</span><span class="n">qe_flow</span><span class="p">),</span> <span class="n">show_flow_boxes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">run_locally</span><span class="p">(</span><span class="n">qe_fw</span><span class="p">,</span> <span class="n">create_folders</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># order of the jobs in the flow is determined by connectivity</span>
+
+<span class="n">graph</span> <span class="o">=</span> <span class="n">to_mermaid</span><span class="p">(</span><span class="n">qe_fw</span><span class="p">,</span> <span class="n">show_flow_boxes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">mm</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><img src="https://mermaid.ink/img/CmZsb3djaGFydCBURAogICAgYzhmNDgyNzUtYTYzOS00YTBjLWEyYWMtN2VkNjdmYTZmMGRkKGJhc2UgcWUgam9iKSAtLT58b3V0cHV0LnN0cnVjdHVyZXwgOTRhMmQxODEtOWIwOC00MDE5LThlOTUtMWMxZDQ2YzdkNWQzKGdldF9ldl9jdXJ2ZSkKICAgIDk0YTJkMTgxLTliMDgtNDAxOS04ZTk1LTFjMWQ0NmM3ZDVkMyhnZXRfZXZfY3VydmUpIC0tPnwndm9sdW1lcycsICdlbmVyZ2llcyd8IGY0ZDc4YThhLTMyZTMtNDdjYS04NDY3LWYzMTMxMmQwYWJkMihwbG90X2VuZXJneV92b2x1bWVfY3VydmVfam9iKQo="/></div></div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:02,706 INFO Started executing jobs locally
+2024-06-30 23:49:02,710 INFO Starting job - base qe job (6883bfe0-2b20-49de-92df-c166d6f91dbc)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:32,255 INFO Finished job - base qe job (6883bfe0-2b20-49de-92df-c166d6f91dbc)
+2024-06-30 23:49:32,256 INFO Starting job - get_ev_curve (dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83)
+2024-06-30 23:49:32,268 INFO Finished job - get_ev_curve (dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83)
+2024-06-30 23:49:32,271 INFO Starting job - static qe job (0a57429a-2360-4293-8f2a-5323a1173570)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:35,977 INFO Finished job - static qe job (0a57429a-2360-4293-8f2a-5323a1173570)
+2024-06-30 23:49:35,979 INFO Starting job - static qe job (71996726-fb51-4a1f-8585-373a470bd16c)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:39,977 INFO Finished job - static qe job (71996726-fb51-4a1f-8585-373a470bd16c)
+2024-06-30 23:49:39,982 INFO Starting job - static qe job (2cf7b6c9-1f19-4b2f-b85f-df201d546c26)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:44,274 INFO Finished job - static qe job (2cf7b6c9-1f19-4b2f-b85f-df201d546c26)
+2024-06-30 23:49:44,275 INFO Starting job - static qe job (a04f788d-9bc1-4453-9897-5d0b4e9321d3)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:49,249 INFO Finished job - static qe job (a04f788d-9bc1-4453-9897-5d0b4e9321d3)
+2024-06-30 23:49:49,254 INFO Starting job - static qe job (0ed3d090-bd30-49da-96ed-143b8e7f5b4a)
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2024-06-30 23:49:54,070 INFO Finished job - static qe job (0ed3d090-bd30-49da-96ed-143b8e7f5b4a)
+2024-06-30 23:49:54,071 INFO Starting job - store_inputs (dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83, 2)
+2024-06-30 23:49:54,073 INFO Finished job - store_inputs (dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83, 2)
+2024-06-30 23:49:54,074 INFO Starting job - plot_energy_volume_curve_job (92d14a25-bb90-4c86-b970-af05db90550e)
+2024-06-30 23:49:54,163 INFO Finished job - plot_energy_volume_curve_job (92d14a25-bb90-4c86-b970-af05db90550e)
+2024-06-30 23:49:54,173 INFO Finished executing jobs locally
+</pre></div>
+</div>
+<div class="output text_html"><img src="https://mermaid.ink/img/Zmxvd2NoYXJ0IFRECiAgICA2ODgzYmZlMC0yYjIwLTQ5ZGUtOTJkZi1jMTY2ZDZmOTFkYmMoYmFzZSBxZSBqb2IpCiAgICBkZmM5YTVjZC1mYjkxLTQ1ODItYjZjNi1jNDJiNGM2NWNiODMoZ2V0X2V2X2N1cnZlKQogICAgOTJkMTRhMjUtYmI5MC00Yzg2LWI5NzAtYWYwNWRiOTA1NTBlKHBsb3RfZW5lcmd5X3ZvbHVtZV9jdXJ2ZV9qb2Ip"/></div><img alt="_images/b4ed0b6f9d109fbde2914b3d5ea1e9b94c53c9a407f25f17f76c7d28fca5cb06.png" src="_images/b4ed0b6f9d109fbde2914b3d5ea1e9b94c53c9a407f25f17f76c7d28fca5cb06.png" />
+</div>
+</div>
+<p>And with using the <code class="docutils literal notranslate"><span class="pre">job.output</span></code> connectivity, the mermaid graph looks like:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mm</span><span class="p">(</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">flowchart TD</span>
+<span class="sd">    6883bfe0-2b20-49de-92df-c166d6f91dbc(base qe job) --&gt; |output.structure| dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83(get_ev_curve)</span>
+<span class="sd">    dfc9a5cd-fb91-4582-b6c6-c42b4c65cb83(get_ev_curve) --&gt; |&#39;volumes&#39;, &#39;energies&#39;| 92d14a25-bb90-4c86-b970-af05db90550e(plot_energy_volume_curve_job)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><img src="https://mermaid.ink/img/CmZsb3djaGFydCBURAogICAgNjg4M2JmZTAtMmIyMC00OWRlLTkyZGYtYzE2NmQ2ZjkxZGJjKGJhc2UgcWUgam9iKSAtLT4gfG91dHB1dC5zdHJ1Y3R1cmV8IGRmYzlhNWNkLWZiOTEtNDU4Mi1iNmM2LWM0MmI0YzY1Y2I4MyhnZXRfZXZfY3VydmUpCiAgICBkZmM5YTVjZC1mYjkxLTQ1ODItYjZjNi1jNDJiNGM2NWNiODMoZ2V0X2V2X2N1cnZlKSAtLT4gfCd2b2x1bWVzJywgJ2VuZXJnaWVzJ3wgOTJkMTRhMjUtYmI5MC00Yzg2LWI5NzAtYWYwNWRiOTA1NTBlKHBsb3RfZW5lcmd5X3ZvbHVtZV9jdXJ2ZV9qb2IpCg=="/></div></div>
 </div>
 </section>
 <section id="submission-to-an-hpc-check-pointing-error-handling">
