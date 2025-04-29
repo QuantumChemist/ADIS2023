@@ -28,13 +28,13 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -182,9 +182,12 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="challenges.html">Challenges</a></li>
-<li class="toctree-l1"><a class="reference internal" href="aiida.html">Aiida</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aiida.html">AiiDA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jobflow.html">jobflow</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">pyiron</a></li>
+
+
+
 <li class="toctree-l1"><a class="reference internal" href="simstack.html">SimStack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conclusion.html">Conclusion</a></li>
 </ul>
@@ -366,12 +369,21 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">pyiron</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-setup">Installation / Setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-a-new-simulation-code">Implementation of a new simulation code</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-optimization">Structure optimization</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-structures">Generate Structures</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#energy-volume-curve">Energy Volume Curve</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submission-to-an-hpc-check-pointing-error-handling">Submission to an HPC / Check pointing / Error handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-storage-data-sharing">Data Storage / Data Sharing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#publication-of-the-workflow">Publication of the workflow</a></li>
 </ul>
+</li>
+</ul>
+
             </nav>
         </div>
     </div>
@@ -394,34 +406,36 @@ document.write(`
 <p>The <code class="docutils literal notranslate"><span class="pre">pyiron_base</span></code> workflow manager provides two interfaces to implement new simulation codes or simulation workflows. For simulation codes which already provide a python interface the <code class="docutils literal notranslate"><span class="pre">wrap_python_function()</span></code> function is used to convert any python function into a pyiron job object. In analogy external executables can be wrapped using the <code class="docutils literal notranslate"><span class="pre">wrap_executable()</span></code>. Based on these two functions any executable can be wrapped as <code class="docutils literal notranslate"><span class="pre">Job</span></code> object. By naming the <code class="docutils literal notranslate"><span class="pre">Job</span></code> object the user can easily reload the same calculation at any time. Furthermore, <code class="docutils literal notranslate"><span class="pre">pyiron_base</span></code> internally uses the name to generate a directory for each <code class="docutils literal notranslate"><span class="pre">Job</span></code> object to simplify locating the input and output of a given calculation for debugging:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">write</span>
-<span class="kn">from</span> <span class="nn">adis_tools.parsers</span> <span class="kn">import</span> <span class="n">parse_pw</span>
-<span class="kn">from</span> <span class="nn">pyiron_base.project.delayed</span> <span class="kn">import</span> <span class="n">draw</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">bulk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">write</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">adis_tools.parsers</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_pw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyiron_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">job</span><span class="p">,</span> <span class="n">Project</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">write_input</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s1">&#39;input.pwi&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">write_input</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s2">&quot;input.pwi&quot;</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">write</span><span class="p">(</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> 
-        <span class="n">images</span><span class="o">=</span><span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">],</span> 
-        <span class="n">Crystal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
-        <span class="n">kpts</span><span class="o">=</span><span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;kpts&quot;</span><span class="p">],</span> 
+        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="n">images</span><span class="o">=</span><span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">],</span>
+        <span class="n">Crystal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">kpts</span><span class="o">=</span><span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;kpts&quot;</span><span class="p">],</span>
         <span class="n">input_data</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">&#39;calculation&#39;</span><span class="p">:</span> <span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;calculation&quot;</span><span class="p">],</span>
-            <span class="s1">&#39;occupations&#39;</span><span class="p">:</span> <span class="s1">&#39;smearing&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;degauss&#39;</span><span class="p">:</span> <span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;smearing&quot;</span><span class="p">],</span>
-        <span class="p">},</span> 
+            <span class="s2">&quot;calculation&quot;</span><span class="p">:</span> <span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;calculation&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;occupations&quot;</span><span class="p">:</span> <span class="s2">&quot;smearing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;degauss&quot;</span><span class="p">:</span> <span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;smearing&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
         <span class="n">pseudopotentials</span><span class="o">=</span><span class="n">input_dict</span><span class="p">[</span><span class="s2">&quot;pseudopotentials&quot;</span><span class="p">],</span>
-        <span class="n">tstress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
-        <span class="n">tprnfor</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">tstress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">tprnfor</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -429,13 +443,31 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">collect_output</span><span class="p">(</span><span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">parse_pw</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s1">&#39;pwscf.xml&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">collect_output</span><span class="p">(</span><span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">parse_pw</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s2">&quot;pwscf.xml&quot;</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;ase_structure&#39;</span><span class="p">],</span>
+        <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;ase_structure&quot;</span><span class="p">],</span>
         <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;ase_structure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(),</span>
+        <span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;ase_structure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(),</span>
     <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@job</span><span class="p">(</span><span class="n">output_key_lst</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="s2">&quot;structure&quot;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_qe</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="n">input_dict</span><span class="p">):</span>
+    <span class="n">write_input</span><span class="p">(</span>
+        <span class="n">input_dict</span><span class="o">=</span><span class="n">input_dict</span><span class="p">,</span>
+        <span class="n">working_directory</span><span class="o">=</span><span class="n">working_directory</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+        <span class="s2">&quot;mpirun -np 1 pw.x -in input.pwi &gt; output.pwo&quot;</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">working_directory</span><span class="p">,</span>
+        <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">collect_output</span><span class="p">(</span><span class="n">working_directory</span><span class="o">=</span><span class="n">working_directory</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -443,13 +475,13 @@ document.write(`
 <p>Finally, multiple simulation can be combined in a simulation protocol. In this case the optimization of an Aluminium lattice structure, the calculation of an energy volume curve and the plotting of the resulting curve.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_structures</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">strain_lst</span><span class="p">):</span> 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@job</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_structures</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">strain_lst</span><span class="p">):</span>
     <span class="n">structure_lst</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">strain</span> <span class="ow">in</span> <span class="n">strain_lst</span><span class="p">:</span>
         <span class="n">structure_strain</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">structure_strain</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span>
-            <span class="n">structure_strain</span><span class="o">.</span><span class="n">cell</span> <span class="o">*</span> <span class="n">strain</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">),</span> 
-            <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">structure_strain</span><span class="o">.</span><span class="n">cell</span> <span class="o">*</span> <span class="n">strain</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">),</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
         <span class="n">structure_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">structure_strain</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">structure_lst</span>
@@ -459,136 +491,8 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">bulk</span>
-<span class="kn">from</span> <span class="nn">pyiron_base</span> <span class="kn">import</span> <span class="n">Project</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
-<span class="n">project</span><span class="o">.</span><span class="n">remove_jobs</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">silently</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">structure</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span><span class="s1">&#39;Al&#39;</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">4.05</span><span class="p">,</span> <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">pseudopotentials</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Al&quot;</span><span class="p">:</span> <span class="s2">&quot;Al.pbe-n-kjpaw_psl.1.0.0.UPF&quot;</span><span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"version_major": 2, "version_minor": 0, "model_id": "1aa0ff7e51da492fbad126c2a8e631f1"}</script></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Structure optimization </span>
-<span class="n">job_qe_minimize</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">wrap_executable</span><span class="p">(</span>
-    <span class="n">job_name</span><span class="o">=</span><span class="s2">&quot;job_qe_minimize&quot;</span><span class="p">,</span>
-    <span class="n">write_input_funct</span><span class="o">=</span><span class="n">write_input</span><span class="p">,</span>
-    <span class="n">collect_output_funct</span><span class="o">=</span><span class="n">collect_output</span><span class="p">,</span>
-    <span class="n">input_dict</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">structure</span><span class="p">,</span> 
-        <span class="s2">&quot;pseudopotentials&quot;</span><span class="p">:</span> <span class="n">pseudopotentials</span><span class="p">,</span> 
-        <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-        <span class="s2">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;vc-relax&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;smearing&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="n">executable_str</span><span class="o">=</span><span class="s2">&quot;mpirun -np 1 pw.x -in input.pwi &gt; output.pwo&quot;</span><span class="p">,</span>
-    <span class="n">delayed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">output_file_lst</span><span class="o">=</span><span class="p">[],</span>
-    <span class="n">output_key_lst</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-
-<span class="c1"># Generate Structures</span>
-<span class="n">number_of_strains</span> <span class="o">=</span> <span class="mi">5</span> 
-<span class="n">structure_lst</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">wrap_python_function</span><span class="p">(</span>
-    <span class="n">python_function</span><span class="o">=</span><span class="n">generate_structures</span><span class="p">,</span>
-    <span class="n">structure</span><span class="o">=</span><span class="n">job_qe_minimize</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span> 
-    <span class="n">strain_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">number_of_strains</span><span class="p">),</span>
-    <span class="n">delayed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">list_length</span><span class="o">=</span><span class="n">number_of_strains</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="c1"># Energy Volume Curve </span>
-<span class="n">energy_lst</span><span class="p">,</span> <span class="n">volume_lst</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">structure_strain</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">structure_lst</span><span class="p">):</span>
-    <span class="n">job_strain</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">wrap_executable</span><span class="p">(</span>
-        <span class="n">job_name</span><span class="o">=</span><span class="s2">&quot;job_strain_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
-        <span class="n">write_input_funct</span><span class="o">=</span><span class="n">write_input</span><span class="p">,</span>
-        <span class="n">collect_output_funct</span><span class="o">=</span><span class="n">collect_output</span><span class="p">,</span>
-        <span class="n">input_dict</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">structure_strain</span><span class="p">,</span> 
-            <span class="s2">&quot;pseudopotentials&quot;</span><span class="p">:</span> <span class="n">pseudopotentials</span><span class="p">,</span> 
-            <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-            <span class="s2">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;scf&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;smearing&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="n">executable_str</span><span class="o">=</span><span class="s2">&quot;mpirun -np 1 pw.x -in input.pwi &gt; output.pwo&quot;</span><span class="p">,</span>
-        <span class="n">delayed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">output_file_lst</span><span class="o">=</span><span class="p">[],</span>
-        <span class="n">output_key_lst</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-    <span class="n">energy_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job_strain</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
-    <span class="n">volume_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job_strain</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>As the quantum espresso calculations are the computationally expensive steps they are combined in a python function to be submitted to dedicated computing resources. In contrast the creation of the atomistic structure and the plotting of the energy volume curve are executed in the users process.</p>
-<p>The remaining simulation protocol, can be summarized in a few lines. The required modules are imported, a <code class="docutils literal notranslate"><span class="pre">Project</span></code> object is created which represents a folder on the filesystem, the <code class="docutils literal notranslate"><span class="pre">wrap_python_function()</span></code> is used to convert the computationally expensive steps of the workflow into a single <code class="docutils literal notranslate"><span class="pre">Job</span></code> object and the resulting energy volume curve is plotted:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">collect</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="n">volume_lst</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy_lst</span><span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">wrap_python_function</span><span class="p">(</span>
-    <span class="n">python_function</span><span class="o">=</span><span class="n">collect</span><span class="p">,</span>
-    <span class="n">volume_lst</span><span class="o">=</span><span class="n">volume_lst</span><span class="p">,</span>
-    <span class="n">energy_lst</span><span class="o">=</span><span class="n">energy_lst</span><span class="p">,</span>
-    <span class="n">delayed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result_dict</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
-<span class="n">result_dict</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job job_qe_minimize was saved and received the ID: 1
-The job generate_structures77d97073ea046f330145d7402e23774c was saved and received the ID: 2
-The job job_strain_0 was saved and received the ID: 3
-The job job_strain_1 was saved and received the ID: 4
-The job job_strain_2 was saved and received the ID: 5
-The job job_strain_3 was saved and received the ID: 6
-The job job_strain_4 was saved and received the ID: 7
-The job collectfbfe0cc8f5cd2e8c9ee376e43de6c82b was saved and received the ID: 8
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;volume&#39;: [59.59410625269659,
-  62.90488993340162,
-  66.21567361410706,
-  69.52645729481236,
-  72.83724097551769],
- &#39;energy&#39;: [-1074.845744615061,
-  -1074.9161488594564,
-  -1074.936524166831,
-  -1074.9192860025798,
-  -1074.8737904693382]}
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_energy_volume_curve</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@job</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_energy_volume_curve</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Volume&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
@@ -597,21 +501,165 @@ The job collectfbfe0cc8f5cd2e8c9ee376e43de6c82b was saved and received the ID: 8
 </div>
 </div>
 </div>
-<p>This concludes the first version of the simulation workflow, in the following the submission to HPC resources, the different options for data storage and the publication of the workflow are briefly discussed.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_energy_volume_curve</span><span class="p">(</span>
-    <span class="n">volume_lst</span><span class="o">=</span><span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">],</span> 
-    <span class="n">energy_lst</span><span class="o">=</span><span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pseudopotentials</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Al&quot;</span><span class="p">:</span> <span class="s2">&quot;Al.pbe-n-kjpaw_psl.1.0.0.UPF&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="structure-optimization">
+<h1>Structure optimization<a class="headerlink" href="#structure-optimization" title="Link to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span> <span class="o">=</span> <span class="n">bulk</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Al&quot;</span><span class="p">,</span>
+    <span class="n">a</span><span class="o">=</span><span class="mf">4.05</span><span class="p">,</span>
+    <span class="n">cubic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pr</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<span class="n">pr</span><span class="o">.</span><span class="n">remove_jobs</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">silently</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="cell_output docutils container">
-<img alt="_images/dd3f1d396ca6b842da792be1d28933689c939e72c221dfaab844b582d11d564b.png" src="_images/dd3f1d396ca6b842da792be1d28933689c939e72c221dfaab844b582d11d564b.png" />
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c7c0087fa46a4a179c0fa72b2f8817f5", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<p>As the quantum espresso calculations are the computationally expensive steps they are combined in a python function to be submitted to dedicated computing resources. In contrast the creation of the atomistic structure and the plotting of the energy volume curve are executed in the users process.</p>
+<p>The remaining simulation protocol, can be summarized in a few lines. The required modules are imported, a <code class="docutils literal notranslate"><span class="pre">Project</span></code> object is created which represents a folder on the filesystem, the <code class="docutils literal notranslate"><span class="pre">wrap_python_function()</span></code> is used to convert the computationally expensive steps of the workflow into a single <code class="docutils literal notranslate"><span class="pre">Job</span></code> object and the resulting energy volume curve is plotted:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">calc_mini</span> <span class="o">=</span> <span class="n">calculate_qe</span><span class="p">(</span>
+    <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;mini&quot;</span><span class="p">,</span>
+    <span class="n">input_dict</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">structure</span><span class="p">,</span>
+        <span class="s2">&quot;pseudopotentials&quot;</span><span class="p">:</span> <span class="n">pseudopotentials</span><span class="p">,</span>
+        <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="s2">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;vc-relax&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;smearing&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="n">pyiron_project</span><span class="o">=</span><span class="n">pr</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 </section>
+<section class="tex2jax_ignore mathjax_ignore" id="generate-structures">
+<h1>Generate Structures<a class="headerlink" href="#generate-structures" title="Link to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">number_of_strains</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">structure_lst</span> <span class="o">=</span> <span class="n">generate_structures</span><span class="p">(</span>
+    <span class="n">structure</span><span class="o">=</span><span class="n">calc_mini</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">structure</span><span class="p">,</span>
+    <span class="n">strain_lst</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">number_of_strains</span><span class="p">),</span>
+    <span class="n">pyiron_project</span><span class="o">=</span><span class="n">pr</span><span class="p">,</span>
+    <span class="n">list_length</span><span class="o">=</span><span class="n">number_of_strains</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="energy-volume-curve">
+<h1>Energy Volume Curve<a class="headerlink" href="#energy-volume-curve" title="Link to this heading">#</a></h1>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">energy_lst</span><span class="p">,</span> <span class="n">volume_lst</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">structure_strain</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">structure_lst</span><span class="p">):</span>
+    <span class="n">calc_strain</span> <span class="o">=</span> <span class="n">calculate_qe</span><span class="p">(</span>
+        <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;strain_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
+        <span class="n">input_dict</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">structure_strain</span><span class="p">,</span>
+            <span class="s2">&quot;pseudopotentials&quot;</span><span class="p">:</span> <span class="n">pseudopotentials</span><span class="p">,</span>
+            <span class="s2">&quot;kpts&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s2">&quot;calculation&quot;</span><span class="p">:</span> <span class="s2">&quot;scf&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;smearing&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">pyiron_project</span><span class="o">=</span><span class="n">pr</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">energy_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calc_strain</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+    <span class="n">volume_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calc_strain</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span> <span class="o">=</span> <span class="n">plot_energy_volume_curve</span><span class="p">(</span>
+    <span class="n">volume_lst</span><span class="o">=</span><span class="n">volume_lst</span><span class="p">,</span>
+    <span class="n">energy_lst</span><span class="o">=</span><span class="n">energy_lst</span><span class="p">,</span>
+    <span class="n">pyiron_project</span><span class="o">=</span><span class="n">pr</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This concludes the first version of the simulation workflow, in the following the submission to HPC resources, the different options for data storage and the publication of the workflow are briefly discussed.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job calculate_qe_0a1b0fc8fbcfee6c291789c48b5ddffa was saved and received the ID: 1
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00163] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job generate_structures_d450ec2eebd7295d3d52234a03191e91 was saved and received the ID: 2
+The job calculate_qe_2057c53f1539b2256df80f5519f7939e was saved and received the ID: 3
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00175] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job calculate_qe_5ea69c073f914047b67aebec6aa30da5 was saved and received the ID: 4
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00183] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job calculate_qe_bbf5dc3fcf06fe0b03fe493b8f8774ac was saved and received the ID: 5
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00192] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job calculate_qe_951f2a25225d007885f0fe31d701fe4f was saved and received the ID: 6
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00201] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job calculate_qe_e67fcb1019ad71966586ee838444a3c4 was saved and received the ID: 7
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[jupyter-materialdigital-2dadis2023-2ds4nn07b3:00210] mca_base_component_repository_open: unable to open mca_btl_openib: librdmacm.so.1: cannot open shared object file: No such file or directory (ignored)
+Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The job plot_energy_volume_curve_97a2c9b8ed90932f269412d5d053bf2c was saved and received the ID: 8
+</pre></div>
+</div>
+<img alt="_images/dd3f1d396ca6b842da792be1d28933689c939e72c221dfaab844b582d11d564b.png" src="_images/dd3f1d396ca6b842da792be1d28933689c939e72c221dfaab844b582d11d564b.png" />
+</div>
+</div>
 <section id="submission-to-an-hpc-check-pointing-error-handling">
 <h2>Submission to an HPC / Check pointing / Error handling<a class="headerlink" href="#submission-to-an-hpc-check-pointing-error-handling" title="Link to this heading">#</a></h2>
 <p>While the local installation of the <code class="docutils literal notranslate"><span class="pre">pyiron_base</span></code> workflow manager requires no additional configuration, the connection to an HPC system is more evolved. The existing examples provided for specific HPC systems can be converted to jinja2 templates, by defining variables with double curly brackets. A minimalist template could be:</p>
@@ -705,12 +753,21 @@ The job collectfbfe0cc8f5cd2e8c9ee376e43de6c82b was saved and received the ID: 8
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">pyiron</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-setup">Installation / Setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-a-new-simulation-code">Implementation of a new simulation code</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#structure-optimization">Structure optimization</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-structures">Generate Structures</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#energy-volume-curve">Energy Volume Curve</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submission-to-an-hpc-check-pointing-error-handling">Submission to an HPC / Check pointing / Error handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-storage-data-sharing">Data Storage / Data Sharing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#publication-of-the-workflow">Publication of the workflow</a></li>
 </ul>
+</li>
+</ul>
+
   </nav></div>
 
 </div></div>
@@ -724,7 +781,7 @@ The job collectfbfe0cc8f5cd2e8c9ee376e43de6c82b was saved and received the ID: 8
   <div class="footer-item">
     
 <p class="component-author">
-By Marnik Bercx, Janine George, Jan Janssen, Joerg Schaarschmidt
+By Marnik Bercx, Christina Ertural, Janine George, Jan Janssen, Joerg Schaarschmidt
 </p>
 
   </div>

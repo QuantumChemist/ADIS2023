@@ -28,13 +28,13 @@
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=87e54e7c" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'challenges';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Aiida" href="aiida.html" />
+    <link rel="next" title="AiiDA" href="aiida.html" />
     <link rel="prev" title="Introduction" href="introduction.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -182,9 +182,12 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Challenges</a></li>
-<li class="toctree-l1"><a class="reference internal" href="aiida.html">Aiida</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aiida.html">AiiDA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="jobflow.html">jobflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pyiron_base.html">pyiron</a></li>
+
+
+
 <li class="toctree-l1"><a class="reference internal" href="simstack.html">SimStack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conclusion.html">Conclusion</a></li>
 </ul>
@@ -382,12 +385,12 @@ document.write(`
 <h3>Python Function<a class="headerlink" href="#python-function" title="Link to this heading">#</a></h3>
 <p>For the case of python functions, integrating the function should ideally be as simple as setting a python decorator:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@job_decorator</span>
-<span class="k">def</span> <span class="nf">my_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
 </div>
 <p>The generation of the strained structures can be represented as such a python function. It takes a single structure and a list of strains as an input and returns a list of strained structures as an output:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_structures</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">strain_lst</span><span class="p">):</span> 
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_structures</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">strain_lst</span><span class="p">):</span> 
     <span class="n">structure_lst</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">strain</span> <span class="ow">in</span> <span class="n">strain_lst</span><span class="p">:</span>
         <span class="n">structure_strain</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -400,7 +403,7 @@ document.write(`
 </pre></div>
 </div>
 <p>In the same way, the plotting of the resulting energy volume curve can be represented as python functions:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_energy_volume_curve</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">plot_energy_volume_curve</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">volume_lst</span><span class="p">,</span> <span class="n">energy_lst</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Volume&quot;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
@@ -411,7 +414,7 @@ document.write(`
 <section id="external-executable">
 <h3>External Executable<a class="headerlink" href="#external-executable" title="Link to this heading">#</a></h3>
 <p>For the case of interfacing with an external executable three steps are required. The writing of the input files, the calling of the executable and the parsing of the output files. For interfacing with the quantum espresso DFT simulation code, the function to write the input files could be written as:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">write_input</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">write_input</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s1">&#39;input.pwi&#39;</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">write</span><span class="p">(</span>
@@ -431,7 +434,7 @@ document.write(`
 </pre></div>
 </div>
 <p>Here all quantum espresso-specific inputs are defined by the <code class="docutils literal notranslate"><span class="pre">input_dict</span></code> and the additional <code class="docutils literal notranslate"><span class="pre">working_directory</span></code> specifies the directory in which the input should be written. In analogy, the function to collect the output of the quantum espresso calculation also receives the <code class="docutils literal notranslate"><span class="pre">working_directory</span></code> as input and returns the output as a python dictionary:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">collect_output</span><span class="p">(</span><span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">collect_output</span><span class="p">(</span><span class="n">working_directory</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">parse_pw</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_directory</span><span class="p">,</span> <span class="s2">&quot;pwscf.xml&quot;</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;structure&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;ase_structure&quot;</span><span class="p">],</span>
@@ -493,7 +496,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Aiida</p>
+        <p class="prev-next-title">AiiDA</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -534,7 +537,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By Marnik Bercx, Janine George, Jan Janssen, Joerg Schaarschmidt
+By Marnik Bercx, Christina Ertural, Janine George, Jan Janssen, Joerg Schaarschmidt
 </p>
 
   </div>
